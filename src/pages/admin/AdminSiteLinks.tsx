@@ -5,7 +5,7 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
-import { Plus, Edit, Trash2, Eye, EyeOff, Link as LinkIcon } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Eye, EyeOff, Link as LinkIcon } from 'lucide-react';
 
 const mockSiteLinks: SiteLink[] = [
   { id: '1', name: 'About Us', url: '/about', category: 'footer', position: 1, isActive: true },

@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
-import { Plus, Edit, Trash2, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
 
 const mockBanners: Banner[] = [
   {

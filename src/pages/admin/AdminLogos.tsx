@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
-import { Plus, Edit, Trash2, CheckCircle, Circle } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, CheckCircle, Circle } from 'lucide-react';
 
 const mockLogos: SiteLogo[] = [
   {

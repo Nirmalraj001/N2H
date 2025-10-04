@@ -7,7 +7,7 @@ import { Textarea } from '../components/ui/Textarea';
 import { Modal } from '../components/ui/Modal';
 import { Review } from '../types';
 import { productsAPI, ordersAPI } from '../services/api';
-import { Star, ThumbsUp, MessageSquare, Edit, Trash2 } from 'lucide-react';
+import { Star, ThumbsUp, MessageSquare, CreditCard as Edit, Trash2 } from 'lucide-react';
 
 export const Reviews = () => {
   const { user } = useAuth();
