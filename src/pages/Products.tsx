@@ -15,10 +15,10 @@ export const Products = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const { addToCart } = useCart();
+  const { addToCart, cart, updateQuantity } = useCart();
   const { showToast } = useToast();
 
-  const categoryParam = searchParams.get('category') || undefined;
+  const categoryParams = searchParams.getAll('category');
   const searchQuery = searchParams.get('search') || undefined;
   const sortParam = searchParams.get('sort') || 'newest';
   const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
@@ -40,13 +40,17 @@ export const Products = () => {
     const loadProducts = async () => {
       setLoading(true);
       try {
-        const prods = await productsAPI.getAll({
-          category: categoryParam,
+        let prods = await productsAPI.getAll({
           search: searchQuery,
           sort: sortParam,
           minPrice,
           maxPrice,
         });
+
+        if (categoryParams.length > 0) {
+          prods = prods.filter(p => categoryParams.includes(p.category));
+        }
+
         setProducts(prods);
       } catch (error) {
         showToast('Failed to load products', 'error');
@@ -55,7 +59,7 @@ export const Products = () => {
       }
     };
     loadProducts();
-  }, [categoryParam, searchQuery, sortParam, minPrice, maxPrice]);
+  }, [categoryParams.join(','), searchQuery, sortParam, minPrice, maxPrice]);
 
   const updateParams = (updates: Record<string, string | undefined>) => {
     const newParams = new URLSearchParams(searchParams);
@@ -69,8 +73,20 @@ export const Products = () => {
     setSearchParams(newParams);
   };
 
-  const handleCategoryChange = (categoryId?: string) => {
-    updateParams({ category: categoryId });
+  const handleCategoryChange = (categoryIds: string[]) => {
+    const newParams = new URLSearchParams();
+
+    searchParams.forEach((value, key) => {
+      if (key !== 'category') {
+        newParams.set(key, value);
+      }
+    });
+
+    categoryIds.forEach(id => {
+      newParams.append('category', id);
+    });
+
+    setSearchParams(newParams);
   };
 
   const handlePriceChange = (min?: number, max?: number) => {
@@ -84,22 +100,30 @@ export const Products = () => {
     setSearchParams({});
   };
 
-  const handleAddToCart = (productId: string) => {
-    addToCart(productId, 1);
-    showToast('Added to cart', 'success');
+  const handleAddToCart = (productId: string, quantity: number) => {
+    if (quantity > 0) {
+      addToCart(productId, quantity);
+      showToast('Added to cart', 'success');
+    } else if (quantity < 0) {
+      const currentItem = cart.find(item => item.productId === productId);
+      if (currentItem) {
+        const newQty = currentItem.quantity + quantity;
+        if (newQty > 0) {
+          updateQuantity(productId, newQty);
+        }
+      }
+    }
   };
 
-  const currentCategory = categories.find(c => c.id === categoryParam);
+  const selectedCategories = categories.filter(c => categoryParams.includes(c.id));
+  const categoryNames = selectedCategories.map(c => c.name).join(', ');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">
-          {currentCategory ? currentCategory.name : searchQuery ? `Search: "${searchQuery}"` : 'All Products'}
+          {categoryNames ? categoryNames : searchQuery ? `Search: "${searchQuery}"` : 'All Products'}
         </h1>
-        {currentCategory?.description && (
-          <p className="text-gray-600 mt-2">{currentCategory.description}</p>
-        )}
         <p className="text-gray-600 mt-2">{products.length} products found</p>
       </div>
 
@@ -132,7 +156,7 @@ export const Products = () => {
         <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 flex-shrink-0`}>
           <FilterPanel
             categories={categories}
-            selectedCategory={categoryParam}
+            selectedCategories={categoryParams}
             minPrice={minPrice}
             maxPrice={maxPrice}
             onCategoryChange={handleCategoryChange}

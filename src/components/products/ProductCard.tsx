@@ -1,14 +1,45 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, Plus, Minus } from 'lucide-react';
 import { Product } from '../../types';
 import { Button } from '../ui/Button';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart?: (productId: string) => void;
+  onAddToCart?: (productId: string, quantity: number) => void;
+  cartQuantity?: number;
 }
 
-export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
+export const ProductCard = ({ product, onAddToCart, cartQuantity = 0 }: ProductCardProps) => {
+  const [quantity, setQuantity] = useState(1);
+  const [showQuantityInput, setShowQuantityInput] = useState(cartQuantity > 0);
+
+  const handleAddToCart = () => {
+    if (onAddToCart) {
+      onAddToCart(product.id, quantity);
+      setShowQuantityInput(true);
+    }
+  };
+
+  const handleIncrement = () => {
+    if (quantity < product.stock) {
+      const newQty = quantity + 1;
+      setQuantity(newQty);
+      if (onAddToCart && showQuantityInput) {
+        onAddToCart(product.id, 1);
+      }
+    }
+  };
+
+  const handleDecrement = () => {
+    if (quantity > 1) {
+      const newQty = quantity - 1;
+      setQuantity(newQty);
+      if (onAddToCart && showQuantityInput) {
+        onAddToCart(product.id, -1);
+      }
+    }
+  };
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
       <Link to={`/products/${product.id}`}>
@@ -65,14 +96,36 @@ export const ProductCard = ({ product, onAddToCart }: ProductCardProps) => {
             )}
           </div>
           {onAddToCart && (
-            <Button
-              size="sm"
-              onClick={() => onAddToCart(product.id)}
-              disabled={product.stock === 0}
-            >
-              <ShoppingCart className="w-4 h-4 mr-1" />
-              Add
-            </Button>
+            <div>
+              {!showQuantityInput ? (
+                <Button
+                  size="sm"
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
+                >
+                  <ShoppingCart className="w-4 h-4 mr-1" />
+                  Add
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleDecrement}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="font-semibold text-lg w-8 text-center">{quantity}</span>
+                  <button
+                    onClick={handleIncrement}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                    disabled={quantity >= product.stock}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu, LogOut, Package, LayoutDashboard, Bell } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, LogOut, Package, LayoutDashboard, Bell, Star } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
@@ -221,6 +221,14 @@ export const TopNav = () => {
                       >
                         <Package className="w-4 h-4" />
                         Orders
+                      </Link>
+                      <Link
+                        to="/reviews"
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <Star className="w-4 h-4" />
+                        My Reviews
                       </Link>
                       <button
                         onClick={handleLogout}

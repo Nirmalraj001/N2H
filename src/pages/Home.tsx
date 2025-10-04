@@ -67,8 +67,8 @@ export const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleAddToCart = (productId: string) => {
-    addToCart(productId, 1);
+  const handleAddToCart = (productId: string, quantity: number) => {
+    addToCart(productId, quantity);
     showToast('Added to cart', 'success');
   };
 

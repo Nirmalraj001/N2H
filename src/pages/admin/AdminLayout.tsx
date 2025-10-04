@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, Users, FolderTree, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, FolderTree, ArrowLeft, Image, Link2, Star, FileImage } from 'lucide-react';
 
 export const AdminLayout = () => {
   const location = useLocation();
@@ -10,6 +10,10 @@ export const AdminLayout = () => {
     { path: '/admin/categories', label: 'Categories', icon: FolderTree },
     { path: '/admin/orders', label: 'Orders', icon: ShoppingCart },
     { path: '/admin/users', label: 'Users', icon: Users },
+    { path: '/admin/banners', label: 'Banners', icon: Image },
+    { path: '/admin/logos', label: 'Logos', icon: FileImage },
+    { path: '/admin/site-links', label: 'Site Links', icon: Link2 },
+    { path: '/admin/reviews', label: 'Reviews', icon: Star },
   ];
 
   return (

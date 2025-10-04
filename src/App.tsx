@@ -20,6 +20,11 @@ import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminBanners } from './pages/admin/AdminBanners';
+import { AdminLogos } from './pages/admin/AdminLogos';
+import { AdminSiteLinks } from './pages/admin/AdminSiteLinks';
+import { AdminReviews } from './pages/admin/AdminReviews';
+import { Reviews } from './pages/Reviews';
 
 function App() {
   return (
@@ -94,6 +99,16 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/reviews"
+                element={
+                  <ProtectedRoute>
+                    <AppShell>
+                      <Reviews />
+                    </AppShell>
+                  </ProtectedRoute>
+                }
+              />
 
               <Route
                 path="/admin"
@@ -108,6 +123,10 @@ function App() {
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="users" element={<AdminUsers />} />
+                <Route path="banners" element={<AdminBanners />} />
+                <Route path="logos" element={<AdminLogos />} />
+                <Route path="site-links" element={<AdminSiteLinks />} />
+                <Route path="reviews" element={<AdminReviews />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

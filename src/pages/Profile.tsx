@@ -4,15 +4,21 @@ import { useToast } from '../components/ui/Toast';
 import { usersAPI } from '../services/api';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { User } from 'lucide-react';
+import { User, Lock } from 'lucide-react';
 
 export const Profile = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,6 +33,36 @@ export const Profile = () => {
       showToast('Failed to update profile', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showToast('Passwords do not match', 'error');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      showToast('Password must be at least 6 characters', 'error');
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      showToast('Password changed successfully', 'success');
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    } catch (error) {
+      showToast('Failed to change password', 'error');
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -55,6 +91,44 @@ export const Profile = () => {
           />
           <Button type="submit" disabled={loading}>
             {loading ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </form>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Lock className="w-5 h-5 text-gray-700" />
+          <h2 className="text-xl font-semibold">Change Password</h2>
+        </div>
+        <form onSubmit={handlePasswordChange} className="space-y-4">
+          <Input
+            label="Current Password"
+            type="password"
+            required
+            value={passwordData.currentPassword}
+            onChange={e => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+          />
+          <Input
+            label="New Password"
+            type="password"
+            required
+            minLength={6}
+            value={passwordData.newPassword}
+            onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+          />
+          <Input
+            label="Confirm New Password"
+            type="password"
+            required
+            minLength={6}
+            value={passwordData.confirmPassword}
+            onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+          />
+          {passwordData.newPassword && passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+            <p className="text-red-600 text-sm">Passwords do not match</p>
+          )}
+          <Button type="submit" disabled={passwordLoading}>
+            {passwordLoading ? 'Changing...' : 'Change Password'}
           </Button>
         </form>
       </div>

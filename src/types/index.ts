@@ -71,3 +71,63 @@ export interface OrderProduct {
   price: number;
   image?: string;
 }
+
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  title?: string;
+  comment: string;
+  verifiedPurchase: boolean;
+  helpfulCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Banner {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  buttonText?: string;
+  position: number;
+  isActive: boolean;
+  startDate: string;
+  endDate?: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  description?: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minPurchaseAmount: number;
+  maxDiscountAmount?: number;
+  usageLimit?: number;
+  usageCount: number;
+  perUserLimit: number;
+  isActive: boolean;
+  startDate: string;
+  endDate?: string;
+}
+
+export interface SiteLink {
+  id: string;
+  name: string;
+  url: string;
+  category: string;
+  position: number;
+  isActive: boolean;
+}
+
+export interface SiteLogo {
+  id: string;
+  name: string;
+  imageUrl: string;
+  altText?: string;
+  isActive: boolean;
+}

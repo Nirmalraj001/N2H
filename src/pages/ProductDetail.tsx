@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, ShoppingCart, ArrowLeft, Package, Truck, Shield } from 'lucide-react';
+import { Star, ShoppingCart, ArrowLeft, Package, Truck, Shield, Plus, Minus } from 'lucide-react';
 import { Product } from '../types';
 import { productsAPI } from '../services/api';
 import { useCart } from '../contexts/CartContext';
 import { useToast } from '../components/ui/Toast';
 import { Button } from '../components/ui/Button';
+import { ProductGrid } from '../components/products/ProductGrid';
 
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,8 +15,10 @@ export const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [showQuantityToggle, setShowQuantityToggle] = useState(false);
   const [activeTab, setActiveTab] = useState<'description' | 'details'>('description');
-  const { addToCart } = useCart();
+  const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([]);
+  const { addToCart, cart, updateQuantity } = useCart();
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -26,6 +29,17 @@ export const ProductDetail = () => {
         const prod = await productsAPI.getById(id);
         if (prod) {
           setProduct(prod);
+          const cartItem = cart.find(item => item.productId === prod.id);
+          if (cartItem) {
+            setQuantity(cartItem.quantity);
+            setShowQuantityToggle(true);
+          }
+
+          const allProducts = await productsAPI.getAll({});
+          const related = allProducts
+            .filter(p => p.id !== prod.id && (p.category === prod.category || p.tags.some(tag => prod.tags.includes(tag))))
+            .slice(0, 4);
+          setSuggestedProducts(related);
         } else {
           showToast('Product not found', 'error');
           navigate('/products');
@@ -37,12 +51,38 @@ export const ProductDetail = () => {
       }
     };
     loadProduct();
-  }, [id]);
+  }, [id, cart]);
 
   const handleAddToCart = () => {
     if (!product) return;
     addToCart(product.id, quantity);
+    setShowQuantityToggle(true);
     showToast(`Added ${quantity} item(s) to cart`, 'success');
+  };
+
+  const handleIncrement = () => {
+    if (!product) return;
+    if (quantity < product.stock) {
+      const newQty = quantity + 1;
+      setQuantity(newQty);
+      if (showQuantityToggle) {
+        addToCart(product.id, 1);
+      }
+    }
+  };
+
+  const handleDecrement = () => {
+    if (!product) return;
+    if (quantity > 1) {
+      const newQty = quantity - 1;
+      setQuantity(newQty);
+      if (showQuantityToggle) {
+        const currentItem = cart.find(item => item.productId === product.id);
+        if (currentItem) {
+          updateQuantity(product.id, newQty);
+        }
+      }
+    }
   };
 
   if (loading) {
@@ -126,41 +166,39 @@ export const ProductDetail = () => {
           </div>
 
           <div className="space-y-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 rounded-lg border border-gray-300 hover:bg-gray-50"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  min="1"
-                  max={product.stock}
-                  value={quantity}
-                  onChange={e => setQuantity(Math.max(1, Math.min(product.stock, Number(e.target.value))))}
-                  className="w-20 h-10 text-center border border-gray-300 rounded-lg"
-                />
-                <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  className="w-10 h-10 rounded-lg border border-gray-300 hover:bg-gray-50"
-                >
-                  +
-                </button>
+            {!showQuantityToggle ? (
+              <Button
+                size="lg"
+                fullWidth
+                onClick={handleAddToCart}
+                disabled={product.stock === 0}
+              >
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Add to Cart
+              </Button>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    onClick={handleDecrement}
+                    className="w-12 h-12 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="w-5 h-5" />
+                  </button>
+                  <span className="text-3xl font-bold w-20 text-center">{quantity}</span>
+                  <button
+                    onClick={handleIncrement}
+                    className="w-12 h-12 flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                    disabled={quantity >= product.stock}
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+                <p className="text-center text-sm text-gray-600 mt-2">In cart: {quantity} items</p>
               </div>
-            </div>
-
-            <Button
-              size="lg"
-              fullWidth
-              onClick={handleAddToCart}
-              disabled={product.stock === 0}
-            >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              Add to Cart
-            </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-4 py-6 border-t border-gray-200">
@@ -229,6 +267,19 @@ export const ProductDetail = () => {
           </div>
         )}
       </div>
+
+      {suggestedProducts.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">You May Also Like</h2>
+          <ProductGrid
+            products={suggestedProducts}
+            onAddToCart={(productId, qty) => {
+              addToCart(productId, qty);
+              showToast('Added to cart', 'success');
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };
